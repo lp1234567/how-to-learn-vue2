@@ -29,6 +29,7 @@ function removeNode (el) {
   }
 }
 
+// 创建DOM
 function createElm (vnode, parentElm, refElm) {
   const children = vnode.children
   const tag = vnode.tag
@@ -80,7 +81,7 @@ function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
     }
   }
 }
-
+// patch VNode子节点
 function updateChildren (parentElm, oldCh, newCh, removeOnly) {
   let oldStartIdx = 0
   let newStartIdx = 0
@@ -129,7 +130,7 @@ function updateChildren (parentElm, oldCh, newCh, removeOnly) {
     removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx)
   }
 }
-
+// patch 某个VNode节点
 function patchVnode (oldVnode, vnode, removeOnly) {
   if (oldVnode === vnode) {
     return
@@ -162,15 +163,16 @@ function patchVnode (oldVnode, vnode, removeOnly) {
     nodeOps.setTextContent(elm, vnode.text)
   }
 }
-
+// 补丁 将VNode更新到oldVNode上
 export default function patch (oldVnode, vnode) {
   let isInitialPatch = false
 
-  const isRealElement = isDef(oldVnode.nodeType)
+  const isRealElement = isDef(oldVnode.nodeType) // true：DOM
   if (!isRealElement && sameVnode(oldVnode, vnode)) {// 如果两个vnode节点根一致
     patchVnode(oldVnode, vnode)
   } else {
     if (isRealElement) {
+      // 如果是DOM需要转换VNdoe，并在ele属性上赋值为真实dom
       oldVnode = emptyNodeAt(oldVnode)
     }
     //既然到了这里 就说明两个vnode的dom的根节点不一样

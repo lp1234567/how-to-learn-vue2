@@ -42,6 +42,7 @@ import VNode from 'core/vdom/vnode'
     }
   }
 */
+// 代码生成，将ast转换成VNode（带表达式）， 通过with将VNode上下文只想当前vm
 export function generate (ast) {
   const code = ast ? genElement(ast) : '_c("div")'
 
@@ -49,7 +50,7 @@ export function generate (ast) {
     render: ("with(this){return " + code + "}")
   }
 }
-
+// ast转换成VNode（带表达式）
 function genElement (el){
   if (el.for && !el.forProcessed) { // 为了v-for和v-if的优先级： <ul v-for="(item, index) in list" v-if="index==0">，需要先处理for语句
     return genFor(el)
