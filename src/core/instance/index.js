@@ -50,7 +50,7 @@ Vue.prototype._init = function (options) {
 Vue.prototype._initData = function () {
   const vm = this
   let data = vm.$options.data
-  data = vm._data = data || {} // 把 data 所有属性代理到 vm._data 上
+  data = vm._data = data || {} // 把 data 复制到 vm._data 上
 
   if (!isPlainObject(data)) {
     data = {}
@@ -66,6 +66,7 @@ Vue.prototype._initData = function () {
   observe(data, this)
 }
 
+// 更新方法会触发diff VNode 并更新到Dom树上
 Vue.prototype._update = function () {
   const vm = this
   const vnode = vm._render()
