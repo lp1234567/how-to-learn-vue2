@@ -1,5 +1,6 @@
 import { isObject } from 'core/util/index'
 
+// VNode节点类
 export default class VNode {
   constructor (
     tag,      // 标签名
@@ -16,7 +17,7 @@ export default class VNode {
     this.key = data && data.key
   }
 }
-
+// 创建元素节点
 export function createElementVNode(tag, data, children) {
   if (!tag) {
     return createEmptyVNode()
@@ -35,13 +36,13 @@ function simpleNormalizeChildren (children) {
   }
   return children
 }
-
+// 创建空节点，条件语句没有符合情况时候创建空节点
 export const createEmptyVNode = () => {
   const node = new VNode()
   node.text = ''
   return node
 }
-
+// 创建文本节点
 export function createTextVNode (val) {
   return new VNode(undefined, undefined, undefined, String(val))
 }

@@ -47,6 +47,7 @@ export function parse (template) {
   parseHTML(template, {
     warn,
     start (tag, attrs, unary) {
+      // type 1：普通tag节点 2：表达式节点 3：文本节点
       const element = {
         type: 1,
         tag,
