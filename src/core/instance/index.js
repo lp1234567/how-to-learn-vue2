@@ -38,8 +38,10 @@ Vue.prototype._init = function (options) {
     observe(vm._data = {}, vm)
   }
 
+  // 处理计算属性
   if (options.computed) initComputed(vm, options.computed)
 
+  // 编译模板语法
   const compiled = compile(template)
 
   vm._render = () => {
@@ -63,6 +65,7 @@ Vue.prototype._initData = function () {
       proxy(vm, `_data`, keys[i]) // 把 vm.abc 代理到 vm._data.abc
     }
   }
+  // 监听data对象
   observe(data, this)
 }
 
