@@ -5,6 +5,8 @@ import { mustUseProp } from 'core/vdom/attrs'
 
 export const dirRE = /^v-|^:/
 const bindRE = /^:|^v-bind:/
+const onRE = /^v-on:/
+
 export const forAliasRE = /(.*?)\s+(?:in|of)\s+(.*)/
 export const forIteratorRE = /\((\{[^}]*\}|[^,]*),([^,]*)(?:,([^,]*))?\)/
 
@@ -249,7 +251,7 @@ function processAttrs (el) {
     name  = list[i].name
     value = list[i].value
 
-    if (dirRE.test(name)) {
+    if (dirRE.test(name)) { // v-xxx :xxx 开头的
       // mark element as dynamic
       el.hasBindings = true
 
@@ -261,6 +263,9 @@ function processAttrs (el) {
         } else {
           addAttr(el, name, value)
         }
+      } else if (onRE.test(name)) { // v-on开头  v-on:click="xxxx"
+        name = name.replace(onRE, '') // name='click'  value="xxxx"
+        addHandler(el, name, value)
       }
     } else {
       addAttr(el, name, JSON.stringify(value))
@@ -300,4 +305,19 @@ function getAndRemoveAttr (el, name) {
     }
   }
   return val
+}
+
+function addHandler (el, name, value) {
+  let events
+  events = el.events || (el.events = {})
+  const newHandler = { value }
+  const handlers = events[name]
+  /* istanbul ignore if */
+  if (Array.isArray(handlers)) {
+    handlers.push(newHandler)
+  } else if (handlers) {
+    events[name] = [handlers, newHandler]
+  } else {
+    events[name] = newHandler
+  }
 }
