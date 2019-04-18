@@ -44,6 +44,7 @@ Vue.prototype._init = function (options) {
 
   vm._watchers = []
 
+// 代理 methods 上所有的方法名字，同时所有的方法绑定当前 vm 对象作为上下文
   if (options.methods) initMethods(vm, options.methods)
 
   if (options.data) {
@@ -160,6 +161,7 @@ function defineComputed (target, key, userDef) {
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+// 代理 methods 上所有的方法名字，同时所有的方法绑定当前 vm 对象作为上下文
 function initMethods(vm, methods) {
   for (const key in methods) {
     vm[key] = methods[key] == null ? noop : bind(methods[key], vm)

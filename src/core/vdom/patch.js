@@ -1,3 +1,4 @@
+// 真实的dom操作
 import * as nodeOps from './node-ops'
 import VNode from './vnode'
 import { updateAttrs } from './attrs'
@@ -182,8 +183,11 @@ function patchVnode (oldVnode, vnode, removeOnly) {
 
   // 更新属性
   if (hasData) {
+    // 更新属性
     updateAttrs(oldVnode, vnode)
+    // 更新prop参数
     updateDOMProps(oldVnode, vnode)
+    // 更新事件
     updateDOMListeners(oldVnode, vnode)
   }
 

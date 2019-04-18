@@ -50,6 +50,7 @@ export function parse (template) {
     warn,
     start (tag, attrs, unary) {
       // type 1：普通tag节点 2：表达式节点 3：文本节点
+      // ast节点
       const element = {
         type: 1,
         tag,
@@ -105,6 +106,7 @@ export function parse (template) {
       }
     },
     end () {
+      // 从堆栈里面取出上一个处理的节点
       const element = stack[stack.length - 1]
       const lastNode = element.children[element.children.length - 1]
       if (lastNode && lastNode.type === 3 && lastNode.text === ' ' && !inPre) { // 把孩子节点中最后一个空白节点删掉
@@ -265,6 +267,7 @@ function processAttrs (el) {
         }
       } else if (onRE.test(name)) { // v-on开头  v-on:click="xxxx"
         name = name.replace(onRE, '') // name='click'  value="xxxx"
+        // 添加事件处理信息
         addHandler(el, name, value)
       }
     } else {
@@ -307,12 +310,21 @@ function getAndRemoveAttr (el, name) {
   return val
 }
 
+/**
+ * 添加事件处理信息
+ *
+ * @param {*} el  ast节点
+ * @param {*} name event 的名称 例如：click
+ * @param {*} value envent 的值（事件触发时需要执行的函数） 例如：handleclick
+ */
 function addHandler (el, name, value) {
   let events
+  // 获取当前节点的事件
   events = el.events || (el.events = {})
   const newHandler = { value }
   const handlers = events[name]
   /* istanbul ignore if */
+  // 将事件记录在当前节点的events属性里面
   if (Array.isArray(handlers)) {
     handlers.push(newHandler)
   } else if (handlers) {
