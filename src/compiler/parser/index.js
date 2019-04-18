@@ -3,12 +3,12 @@ import { parseText } from './text-parser'
 import { warn } from 'core/util/debug'
 import { mustUseProp } from 'core/vdom/attrs'
 
-export const dirRE = /^v-|^:/
-const bindRE = /^:|^v-bind:/
-const onRE = /^v-on:/
-
+export const dirRE = /^v-|^@|^:/
 export const forAliasRE = /(.*?)\s+(?:in|of)\s+(.*)/
 export const forIteratorRE = /\((\{[^}]*\}|[^,]*),([^,]*)(?:,([^,]*))?\)/
+const bindRE = /^:|^v-bind:/
+const onRE = /^@|^v-on:/
+const modifierRE = /\.[^.]+/g
 
 function makeAttrsMap (attrs){
   const map = {}
@@ -248,7 +248,7 @@ function addIfCondition (el, condition) {
 
 function processAttrs (el) {
   const list = el.attrsList
-  let i, l, name, value
+  let i, l, name, value, modifiers
   for (i = 0, l = list.length; i < l; i++) {
     name  = list[i].name
     value = list[i].value
@@ -256,6 +256,11 @@ function processAttrs (el) {
     if (dirRE.test(name)) { // v-xxx :xxx 开头的
       // mark element as dynamic
       el.hasBindings = true
+      // modifiers
+      modifiers = parseModifiers(name)
+      if (modifiers) {
+        name = name.replace(modifierRE, '')
+      }
 
       if (bindRE.test(name)) { // :xxx 或者 v-bind:xxx
         name = name.replace(bindRE, '')
@@ -268,7 +273,7 @@ function processAttrs (el) {
       } else if (onRE.test(name)) { // v-on开头  v-on:click="xxxx"
         name = name.replace(onRE, '') // name='click'  value="xxxx"
         // 添加事件处理信息
-        addHandler(el, name, value)
+        addHandler(el, name, value, modifiers)
       }
     } else {
       addAttr(el, name, JSON.stringify(value))
@@ -317,11 +322,21 @@ function getAndRemoveAttr (el, name) {
  * @param {*} name event 的名称 例如：click
  * @param {*} value envent 的值（事件触发时需要执行的函数） 例如：handleclick
  */
-function addHandler (el, name, value) {
+function addHandler (el, name, value, modifiers) {
+  // check capture modifier
+  if (modifiers && modifiers.capture) {
+    delete modifiers.capture
+    name = '!' + name // mark the event as captured
+  }
+  if (modifiers && modifiers.once) {
+    delete modifiers.once
+    name = '~' + name // mark the event as once
+  }
+
   let events
   // 获取当前节点的事件
   events = el.events || (el.events = {})
-  const newHandler = { value }
+  const newHandler = { value, modifiers }
   const handlers = events[name]
   /* istanbul ignore if */
   // 将事件记录在当前节点的events属性里面
@@ -331,5 +346,14 @@ function addHandler (el, name, value) {
     events[name] = [handlers, newHandler]
   } else {
     events[name] = newHandler
+  }
+}
+
+function parseModifiers (name) {
+  const match = name.match(modifierRE)
+  if (match) {
+    const ret = {}
+    match.forEach(m => { ret[m.slice(1)] = true })
+    return ret
   }
 }

@@ -28,11 +28,18 @@ export default function Vue (options) {
   this._init(options)
 }
 
-Vue.prototype._c = createElementVNode // 创建Dom节点
-Vue.prototype._v = createTextVNode // 创建文本节点
-Vue.prototype._s = _toString // 解析文本节点中的变量
-Vue.prototype._l = renderList // 渲染list v-for
-Vue.prototype._e = createEmptyVNode // 创建空节点
+// 创建Dom节点
+Vue.prototype._c = createElementVNode
+// 创建文本节点
+Vue.prototype._v = createTextVNode
+// 解析文本节点中的变量
+Vue.prototype._s = _toString
+// 渲染list v-for
+Vue.prototype._l = renderList
+Vue.prototype._k = checkKeyCodes
+// 创建空节点
+Vue.prototype._e = createEmptyVNode
+
 // 初始化 数据、VNode
 Vue.prototype._init = function (options) {
   const vm = this
@@ -186,3 +193,16 @@ Vue.prototype.$watch = function (expOrFn, cb, options) {
 
 Vue.set = set
 Vue.delete = del
+
+/**
+ * Runtime helper for checking keyCodes from config.
+ */
+// _k($event.keyCode,"enter",13)
+function checkKeyCodes (eventKeyCode, key, builtInAlias) {
+  const keyCodes = builtInAlias
+  if (Array.isArray(keyCodes)) {
+    return keyCodes.indexOf(eventKeyCode) === -1
+  } else {
+    return keyCodes !== eventKeyCode
+  }
+}
