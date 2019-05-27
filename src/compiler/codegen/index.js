@@ -67,7 +67,7 @@ import { warn } from 'core/util/debug'
     }
   }
 */
-// 代码生成，将ast转换成VNode（带表达式）， 通过with将VNode上下文只想当前vm
+// 代码生成，将ast转换成VNode（带表达式）， 通过with将VNode上下文指向当前vm
 export function generate (ast) {
   const code = ast ? genElement(ast) : '_c("div")'
 
@@ -75,7 +75,13 @@ export function generate (ast) {
     render: ("with(this){return " + code + "}")
   }
 }
-// ast转换成VNode（带表达式）
+
+/**
+ * ast转换成VNode render函数（带表达式）
+ *
+ * @param {*} el ast树
+ * @returns
+ */
 function genElement (el){
   if (el.for && !el.forProcessed) { // 为了v-for和v-if的优先级： <ul v-for="(item, index) in list" v-if="index==0">，需要先处理for语句
     return genFor(el)
@@ -96,6 +102,12 @@ function genElement (el){
   }
 }
 
+/**
+ * 处理ast中的v-if属性，将其转换为vnode render函数
+ *
+ * @param {*} el ast节点
+ * @returns
+ */
 function genIf (el) {
   el.ifProcessed = true // 标记已经处理过当前这个if节点了，避免递归死循环
   return genIfConditions(el.ifConditions.slice())
@@ -118,6 +130,12 @@ function genIfConditions (conditions) {
   }
 }
 
+/**
+ * 处理ast中的v-for属性，将其转换为vnode render函数
+ *
+ * @param {*} el ast节点
+ * @returns
+ */
 function genFor (el) {
   const exp = el.for
   const alias = el.alias
@@ -150,6 +168,12 @@ function genFor (el) {
     '})'
 }
 
+/**
+ * 处理ast中的属性，将其转换为vnode render函数
+ *
+ * @param {*} el ast节点
+ * @returns {key:1, attrs:{userName:11}, domProps:{selected:true},on:{click:"handleClick", touch:"handleTouch"} }
+ */
 function genData (el) {
   let data = '{'
 
@@ -157,6 +181,7 @@ function genData (el) {
   if (el.key) {
     data += `key:${el.key},`
   }
+  // attrs
   if (el.attrs) {
     data += `attrs:{${genProps(el.attrs)}},`
   }
@@ -175,6 +200,13 @@ function genData (el) {
 }
 
 
+/**
+ * 将某一个ast节点的children遍历，然后调用 genElement函数 将子ast节点转换为vnode render函数
+ * genChildren与genElement函数之间是一个递归遍历的关系
+ *
+ * @param {*} el
+ * @returns
+ */
 function genChildren (el) {
   const children = el.children
   if (children.length) {

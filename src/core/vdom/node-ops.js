@@ -1,5 +1,5 @@
 // 真实的dom操作
-
+// 创建dom节点
 export function createElement (tagName) {
   return document.createElement(tagName)
 }

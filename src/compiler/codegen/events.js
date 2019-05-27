@@ -42,6 +42,14 @@ const modifierCode = {
   right: genGuard(`$event.button !== 2`)
 }
 
+
+/**
+ * ast中带事件，转换成vnode render函数需要的格式
+ *
+ * @export
+ * @param {*} events
+ * @returns on:{click:"handleClick", touch:"handleTouch"}
+ */
 export function genHandlers (events) {
   let res = 'on:{'
   for (const name in events) {

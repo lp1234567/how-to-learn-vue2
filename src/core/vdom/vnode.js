@@ -4,7 +4,7 @@ import { isObject } from 'core/util/index'
 export default class VNode {
   constructor (
     tag,      // 标签名
-    data,     // data = { attrs: 属性key-val }
+    data,     // data = { attrs: 属性key-val, domProps: 参数key-val }
     children, // 孩子 [VNode, VNode]
     text,     // 文本节点
     elm       // 对应的真实dom对象
@@ -17,7 +17,16 @@ export default class VNode {
     this.key = data && data.key
   }
 }
-// 创建元素节点
+
+/**
+ * 创建VNode元素节点
+ *
+ * @export
+ * @param {*} tag 节点标签名
+ * @param {*} data 节点的属性，参数，事件
+ * @param {*} children 节点的子节点
+ * @returns
+ */
 export function createElementVNode(tag, data, children) {
   if (!tag) {
     return createEmptyVNode()
@@ -55,6 +64,8 @@ export function createTextVNode (val) {
 
 // val = list
 // render = function (alias, iterator1, iterator2) { return VNode }
+
+// 渲染_l 渲染v-for list
 export function renderList (val, render) {
   let ret, i, l, keys, key
   if (Array.isArray(val) || typeof val === 'string') {

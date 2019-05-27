@@ -1,6 +1,13 @@
 const defaultTagRE = /\{\{((?:.|\n)+?)\}\}/g
 
-export function parseText (text) { // text = "abc{{a}}xxx{{b}}def"  ->   tokens = ["abc", _s(a)", "xx", "_s(b)", "def"]
+/**
+ * text = "abc{{a}}xxx{{b}}def"  ->   tokens = ["abc", _s(a)", "xx", "_s(b)", "def"] 
+ *
+ * @export
+ * @param {*} text
+ * @returns 带占位符的字符串
+ */
+export function parseText (text) {
   const tagRE = defaultTagRE
   if (!tagRE.test(text)) {
     return

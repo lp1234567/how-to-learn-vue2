@@ -10,6 +10,13 @@ const bindRE = /^:|^v-bind:/
 const onRE = /^@|^v-on:/
 const modifierRE = /\.[^.]+/g
 
+
+/**
+ * 遍历属性数组得到属性map
+ *
+ * @param {*} attrs 属性数组
+ * @returns
+ */
 function makeAttrsMap (attrs){
   const map = {}
   for (let i = 0, l = attrs.length; i < l; i++) {
@@ -32,6 +39,10 @@ const isPreTag = (tag) => tag === 'pre'
  * ast = { text, type=3 } // 文本节点
  *
  * 在AST树 ： if else-if else的多个token节点会合成一个节点，if节点里边包含 [{exp:'if判断条件', block:<if的ast节点>}, {exp:'else-if判断条件', block:<else-if的ast节点>, {block:<else的ast节点>}]
+ *
+ * @export
+ * @param {*} template
+ * @returns
  */
 export function parse (template) {
   const stack = []
@@ -46,6 +57,14 @@ export function parse (template) {
     }
   }
 
+
+/**
+ * 解析template字符串，以root为ast跟根节点，生成语法树
+ *
+ * @export
+ * @param {*} template html字符串
+ * @returns
+ */
   parseHTML(template, {
     warn,
     start (tag, attrs, unary) {
@@ -65,11 +84,13 @@ export function parse (template) {
       }
 
       element.plain = !element.key && !attrs.length
-
+      // 处理v-for指令
       processFor(element)
+      // 处理v-if指令
       processIf(element)
+      // 处理key关键字
       processKey(element)
-
+      // 处理属性
       processAttrs(element)
 
       if (!root) {
@@ -149,14 +170,14 @@ export function parse (template) {
   })
   return root
 }
-
+// 处理key关键字
 function processKey (el) {
   const exp = getBindingAttr(el, 'key')
   if (exp) {
     el.key = exp
   }
 }
-
+// 处理v-for指令
 function processFor (el) {
   let exp
   if ((exp = getAndRemoveAttr(el, 'v-for'))) {
@@ -185,7 +206,7 @@ function processFor (el) {
     }
   }
 }
-
+// 处理v-if相关指令
 function processIf (el) {
   const exp = getAndRemoveAttr(el, 'v-if')
   if (exp) {
@@ -246,17 +267,24 @@ function addIfCondition (el, condition) {
   el.ifConditions.push(condition)
 }
 
+/**
+ * 处理节点的属性
+ *
+ * @param {*} el ast节点
+ */
 function processAttrs (el) {
+  // 获取节点的属性列表
   const list = el.attrsList
   let i, l, name, value, modifiers
   for (i = 0, l = list.length; i < l; i++) {
     name  = list[i].name
     value = list[i].value
-
-    if (dirRE.test(name)) { // v-xxx :xxx 开头的
-      // mark element as dynamic
+    
+    // v-xxx :xxx @ 开头的属性
+    if (dirRE.test(name)) { 
+      // mark element as dynamic 该属性为动态属性
       el.hasBindings = true
-      // modifiers
+      // modifiers 修饰符，解析动态属性中的修饰符,例如 :name.sync=""
       modifiers = parseModifiers(name)
       if (modifiers) {
         name = name.replace(modifierRE, '')
@@ -265,35 +293,62 @@ function processAttrs (el) {
       if (bindRE.test(name)) { // :xxx 或者 v-bind:xxx
         name = name.replace(bindRE, '')
 
+        // 判断参数是不是html标签自带的属性 例如option标签的select属性就是自带的
         if (mustUseProp(el.tag, el.attrsMap.type, name)) {
           addProp(el, name, value)
         } else {
           addAttr(el, name, value)
         }
-      } else if (onRE.test(name)) { // v-on开头  v-on:click="xxxx"
+      } else if (onRE.test(name)) { 
+        // v-on开头  v-on:click="xxxx"
         name = name.replace(onRE, '') // name='click'  value="xxxx"
         // 添加事件处理信息
         addHandler(el, name, value, modifiers)
       }
     } else {
+      // 非动态的一些属性，直接作为属性添加到节点上
       addAttr(el, name, JSON.stringify(value))
     }
   }
 }
 
+/**
+ * 添加参数
+ *
+ * @param {*} el ast节点
+ * @param {*} name 参数名称
+ * @param {*} value 参数值
+ */
 function addProp (el, name, value) {
   (el.props || (el.props = [])).push({ name, value })
 }
 
+/**
+ * 添加属性
+ *
+ * @param {*} el ast节点
+ * @param {*} name 属性名称
+ * @param {*} value 属性值
+ */
 function addAttr (el, name, value) {
   (el.attrs || (el.attrs = [])).push({ name, value })
 }
 
+/**
+ * 
+ *
+ * @param {*} el
+ * @param {*} name 如key
+ * @param {*} getStatic
+ * @returns
+ */
 function getBindingAttr (el,  name, getStatic) {
+  // 获取动态的某个属性的值 例如:  :key="${index}"
   const dynamicValue = getAndRemoveAttr(el, ':' + name)
   if (dynamicValue != null) {
     return dynamicValue
   } else if (getStatic !== false) {
+    // 获取静态的某个属性的值 例如:   key="1"
     const staticValue = getAndRemoveAttr(el, name)
     if (staticValue != null) {
       return JSON.stringify(staticValue)
@@ -301,6 +356,13 @@ function getBindingAttr (el,  name, getStatic) {
   }
 }
 
+/**
+ * 获取ast节点上的某个属性的值，并从节点上删除这个属性
+ *
+ * @param {*} el ast节点
+ * @param {*} name 属性名
+ * @returns 某个属性的值
+ */
 function getAndRemoveAttr (el, name) {
   let val
   if ((val = el.attrsMap[name]) != null) {
@@ -349,6 +411,12 @@ function addHandler (el, name, value, modifiers) {
   }
 }
 
+/**
+ * 解析动态属性中的修饰符
+ *
+ * @param {*} name 例如 :name.sync.stop
+ * @returns {} {sync:true, stop:true,}
+ */
 function parseModifiers (name) {
   const match = name.match(modifierRE)
   if (match) {

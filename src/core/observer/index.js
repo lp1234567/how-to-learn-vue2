@@ -108,25 +108,44 @@ function copyAugment (target, src, keys) {
 }
 
 
+/**
+ * 监听value参数
+ *
+ * @export
+ * @param {*} value
+ * @returns
+ */
 export function observe (value) {
   if (!isObject(value)) {
+    // observe函数会被递归调用，当value不是对象的时候，就可以退出了
     return
   }
 
   let ob
+  // 判断value.__ob__属性存在，且value.__ob__的值是监听器
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
     (Array.isArray(value) || isPlainObject(value)) &&
     !value._isVue // vm对象不作订阅
   ) {
+    // value必须是数组或者对象，且不是vm对象，则去监听
     ob = new Observer(value)
   }
 
   return ob
 }
 
+/**
+ * 通过defineProperty监听obj.key的读写操作，并对obj.key的值进行递归监听
+ *
+ * @export
+ * @param {*} obj 
+ * @param {*} key 
+ * @param {*} val
+ */
 export function defineReactive (obj, key, val) {
+  // 每一个值都建立自己的dep主体对象
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -138,6 +157,7 @@ export function defineReactive (obj, key, val) {
   const getter = property && property.get
   const setter = property && property.set
 
+  // 观察val，如果val是对象，则依次给val的key重写get和set  并返回
   let childOb = observe(val)
   /*
 
@@ -154,7 +174,7 @@ export function defineReactive (obj, key, val) {
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
-        // getA发生的时候，Dep.target == DepM
+        // get a 发生的时候，Dep.target.addDep(this)
         dep.depend()
         if (childOb) {
           childOb.dep.depend()

@@ -1,5 +1,6 @@
 import { makeMap, no } from 'shared/util'
 
+// isUnaryTag(aa) 判断aa是不是空元素语法的元素
 export const isUnaryTag = makeMap(
   'area,base,br,col,embed,frame,hr,img,input,isindex,keygen,' +
   'link,meta,param,source,track,wbr',
@@ -8,6 +9,7 @@ export const isUnaryTag = makeMap(
 
 // Elements that you can, intentionally, leave open
 // (and which close themselves)
+// canBeLeftOpenTag(aa) 判断aa是不是可以省略结束标签的元素
 export const canBeLeftOpenTag = makeMap(
   'colgroup,dd,dt,li,options,p,td,tfoot,th,thead,tr,source',
   true
@@ -84,14 +86,23 @@ function decodeAttr (value) {
   return value.replace(re, match => decodingMap[match])
 }
 
+
+/**
+ * 解析html字符串，在解析到文本、解析到标签起始、解析到标签结束时，调起强硬的回调
+ * 在回调中来组装html ast
+ *
+ * @export
+ * @param {*} html html字符串
+ * @param {*} options
+ *  options = {
+ *    chars:  解析到文本的回调
+ *    start:  解析到标签起始的回调
+ *    end:    解析到标签结束的回调
+ *  }
+ */
 export function parseHTML (html, options) {
-  /*
-    options = {
-      chars:  解析到文本的回调
-      start:  解析到标签起始的回调
-      end:    解析到标签结束的回调
-    }
-  */
+
+  // 栈，检测到开始标签则推入，检测到结束标签则推出
   const stack = []
   let index = 0
   let last, lastTag
@@ -209,6 +220,7 @@ export function parseHTML (html, options) {
     html = html.substring(n)
   }
 
+  // 解析开始标签  <xxx attr="xx">  =>  { tagName, attrs, start, end, unarySlash }
   function parseStartTag () {
     const start = html.match(startTagOpen)
     if (start) {
@@ -234,6 +246,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 处理：堆栈信息/HTML容错，回调上层
   function handleStartTag (match) {
     const tagName = match.tagName
     const unarySlash = match.unarySlash
@@ -274,6 +287,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  // 解析结束标签 标签出栈
   function parseEndTag (tagName, start, end) {
     let pos, lowerCasedTagName
     if (start == null) start = index

@@ -1,5 +1,6 @@
 import { makeMap } from 'shared/util'
 
+// 比对vnode和oldVnode，并更新vnode的dom节点
 export function updateAttrs (oldVnode, vnode) {
   if (!oldVnode.data.attrs && !vnode.data.attrs) {
     return

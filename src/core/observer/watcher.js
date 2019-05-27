@@ -109,6 +109,7 @@ export default class Watcher {
     pushTarget(this)
     let value
     const vm = this.vm
+    // 调用getter，触发页面更新， 触发data的get，添加dep依赖
     value = this.getter.call(vm, vm)
 
     //结束收集依赖

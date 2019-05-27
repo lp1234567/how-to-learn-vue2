@@ -40,9 +40,14 @@ Vue.prototype._k = checkKeyCodes
 // 创建空节点
 Vue.prototype._e = createEmptyVNode
 
-// 初始化 数据、VNode
+/**
+ * new Vue实例的时候，会进行的一些初始化工作
+ *
+ * @param {*} options  {template:"<div>name<div/>",data:{}}
+ */
 Vue.prototype._init = function (options) {
   const vm = this
+  // html字符串
   const template = options.template
 
   // a flag to avoid this being observed
@@ -63,14 +68,18 @@ Vue.prototype._init = function (options) {
   // 处理计算属性
   if (options.computed) initComputed(vm, options.computed)
 
-  // 编译模板语法
+  // 编译模板语法，返回
   const compiled = compile(template)
 
   vm._render = () => {
     return compiled.render.call(vm);
   }
 }
-// 初始化数据
+
+/**
+ * 初始化数据:代理vm._data里面的数据
+ * 遍历vm._data，监听数据的get和set
+ */
 Vue.prototype._initData = function () {
   const vm = this
   let data = vm.$options.data
@@ -83,7 +92,8 @@ Vue.prototype._initData = function () {
   const props = vm.$options.props
   let i = keys.length
   while (i--) {
-    if (!isReserved(keys[i])) { // vm._xx vm.$xxx 都是vm的内部/外部方法，所以不能代理到data上
+    // 排除vm._xx vm.$xxx 属性，他们都是vm的内部/外部方法，所以不能代理到data上
+    if (!isReserved(keys[i])) { 
       proxy(vm, `_data`, keys[i]) // 把 vm.abc 代理到 vm._data.abc
     }
   }
@@ -136,6 +146,13 @@ const sharedPropertyDefinition = {
   set: noop
 }
 
+/**
+ * 把 vm.abc 代理到 vm._data.abc
+ *
+ * @param {*} target vm
+ * @param {*} sourceKey _data
+ * @param {*} key abc
+ */
 function proxy (target, sourceKey, key) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
