@@ -90,6 +90,8 @@ export function parse (template) {
       processIf(element)
       // 处理key关键字
       processKey(element)
+      // 处理:class属性语法
+      processClass(element)
       // 处理属性
       processAttrs(element)
 
@@ -268,6 +270,22 @@ function addIfCondition (el, condition) {
 }
 
 /**
+ * 处理节点的:class属性
+ *
+ * @param {*} el ast节点
+ */
+function processClass (el) {
+  const staticClass = getAndRemoveAttr(el, 'class')
+  if (staticClass) {
+    el.staticClass = JSON.stringify(staticClass)
+  }
+  const classBinding = getBindingAttr(el, 'class', false /* getStatic */)
+  if (classBinding) {
+    el.classBinding = classBinding
+  }
+}
+
+/**
  * 处理节点的属性
  *
  * @param {*} el ast节点
@@ -342,7 +360,7 @@ function addAttr (el, name, value) {
  * @param {*} getStatic
  * @returns
  */
-function getBindingAttr (el,  name, getStatic) {
+function getBindingAttr (el, name, getStatic) {
   // 获取动态的某个属性的值 例如:  :key="${index}"
   const dynamicValue = getAndRemoveAttr(el, ':' + name)
   if (dynamicValue != null) {

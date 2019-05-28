@@ -71,6 +71,7 @@ function genHandler (name, handler) {
       ? handler.value
       : `function($event){${handler.value}}`
   } else {
+    // 有修饰符的情况
     let code = ''
     const keys = []
     for (const key in handler.modifiers) {

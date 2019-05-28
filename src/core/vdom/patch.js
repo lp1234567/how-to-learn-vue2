@@ -3,6 +3,7 @@ import * as nodeOps from './node-ops'
 // VNode类
 import VNode from './vnode'
 import { updateAttrs } from './attrs'
+import { updateClass } from './class'
 import { updateDOMProps } from './dom-props'
 import { updateDOMListeners } from './events'
 
@@ -83,6 +84,8 @@ function createElm (vnode, parentElm, refElm) {
 
     // 给vnode的elm节点添加属性
     updateAttrs(emptyNode, vnode)
+    // 给vnode的elm节点添加class属性
+    updateClass(emptyNode, vnode)
     // 给vnode的elm节点添加参数
     updateDOMProps(emptyNode, vnode)
     // 给vnode的elm节点添加事件
@@ -150,6 +153,7 @@ function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
     }
   }
 }
+
 /**
  * patch 更新VNode的子节点  
  *
@@ -274,6 +278,8 @@ function patchVnode (oldVnode, vnode, removeOnly) {
   if (hasData) {
     // 更新属性
     updateAttrs(oldVnode, vnode)
+    // 更新class
+    updateClass(oldVnode, vnode)
     // 更新prop参数
     updateDOMProps(oldVnode, vnode)
     // 更新事件

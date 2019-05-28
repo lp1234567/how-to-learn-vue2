@@ -44,6 +44,7 @@ export default class Watcher {
   expression: string;
   cb: Function;
   id: number;
+  deep: boolean;
   lazy: boolean;
   dirty: boolean;
   active: boolean;
@@ -61,9 +62,10 @@ export default class Watcher {
     // options
     // https://cn.vuejs.org/v2/api/#vm-watch-expOrFn-callback-options
     if (options) {
+      this.deep = !!options.deep
       this.lazy = !!options.lazy //computed是
     } else {
-      this.lazy = false
+      this.deep = this.lazy = false
     }
     this.cb = cb
     this.id = ++uid             // uid for batching
@@ -111,6 +113,12 @@ export default class Watcher {
     const vm = this.vm
     // 调用getter，触发页面更新， 触发data的get，添加dep依赖
     value = this.getter.call(vm, vm)
+
+    // "touch" every property so they are all tracked as
+    // dependencies for deep watching
+    if (this.deep) {
+      traverse(value)
+    }
 
     //结束收集依赖
     popTarget()
@@ -181,7 +189,8 @@ export default class Watcher {
       const value = this.get()
       if (
         value !== this.value ||
-        isObject(value)
+        isObject(value) ||
+        this.deep
       ) {
         // set new value
         const oldValue = this.value
@@ -222,5 +231,39 @@ export default class Watcher {
       }
       this.active = false
     }
+  }
+}
+
+/**
+ * Recursively traverse an object to evoke all converted
+ * getters, so that every nested property inside the object
+ * is collected as a "deep" dependency.
+ */
+const seenObjects = new Set()
+function traverse (val) { // 目的是触发里边所有value的get操作，让外边收集依赖
+  seenObjects.clear()
+  _traverse(val, seenObjects)
+}
+
+function _traverse (val, seen) {
+  let i, keys
+  const isA = Array.isArray(val)
+  if (!isA && !isObject(val)) { // 只有数组和对象需要递归监听
+    return
+  }
+  if (val.__ob__) {
+    const depId = val.__ob__.dep.id
+    if (seen.has(depId)) {
+      return
+    }
+    seen.add(depId)
+  }
+  if (isA) {
+    i = val.length
+    while (i--) _traverse(val[i], seen)
+  } else {
+    keys = Object.keys(val)
+    i = keys.length
+    while (i--) _traverse(val[keys[i]], seen)
   }
 }

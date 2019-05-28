@@ -1,3 +1,12 @@
+
+
+/**
+ * 给vnode的elm节点更新参数
+ *
+ * @export
+ * @param {*} oldVnode
+ * @param {*} vnode
+ */
 export function updateDOMProps (oldVnode, vnode) {
   if (!oldVnode.data.domProps && !vnode.data.domProps) {
     return
