@@ -1,3 +1,19 @@
+import Watcher from '../observer/watcher'
+
+import {
+  set,
+  del,
+  observe
+} from '../observer/index'
+
+import {
+  warn,
+  hasOwn,
+  isReserved,
+  isPlainObject,
+  bind,
+  noop
+} from '../util/index'
 
 const sharedPropertyDefinition = {
   enumerable: true,
@@ -36,6 +52,7 @@ export function initState (vm) {
   }
   // 初始化计算属性
   if (opts.computed) initComputed(vm, opts.computed)
+  if (opts.watch) initWatch(vm, opts.watch)
 }
 
 
@@ -63,22 +80,6 @@ function initData (vm) {
   // 遍历vm._data，监听数据的get和set
   observe(data, this)
 }
-import Watcher from '../observer/watcher'
-
-import {
-  set,
-  del,
-  observe
-} from '../observer/index'
-
-import {
-  warn,
-  hasOwn,
-  isReserved,
-  isPlainObject,
-  bind,
-  noop
-} from '../util/index'
 
 
 /**
@@ -130,6 +131,43 @@ function initMethods (vm, methods) {
   }
 }
 
+/**
+ * 初始化监听函数，创建watcher
+ *
+ * @param {*} vm
+ * @param {*} watch
+ */
+function initWatch (vm, watch) {
+  for (const key in watch) {
+    const handler = watch[key]
+    if (Array.isArray(handler)) {
+      for (let i = 0; i < handler.length; i++) {
+        createWatcher(vm, key, handler[i])
+      }
+    } else {
+      createWatcher(vm, key, handler)
+    }
+  }
+}
+
+/**
+ * 创建watcher,
+ *
+ * @param {*} vm
+ * @param {*} key
+ * @param {*} handler
+ */
+function createWatcher (vm, key, handler) {
+  let options
+  if (isPlainObject(handler)) {
+    options = handler
+    handler = handler.handler
+  }
+  if (typeof handler === 'string') {
+    handler = vm[handler]
+  }
+  vm.$watch(key, handler, options)
+}
 
 /**
  * 混入状态相关方法？ 其实就是暴露了一些外部可以访问的方法

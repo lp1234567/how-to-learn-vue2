@@ -1,4 +1,5 @@
 import { initState } from './state'
+import { initLifecycle, callHook } from './lifecycle'
 
 let uid = 0
 
@@ -21,7 +22,14 @@ export function initMixin (Vue) {
 
     vm.$options = options
 
+    // 初始化生命周期
+    initLifecycle(vm)
+    // 回调beforeCreate钩子
+    callHook(vm, 'beforeCreate')  // see: https://cn.vuejs.org/v2/api/?#beforeCreate
+    // 初始化状态，data methods等
     initState(vm)
+    // 回调钩子
+    callHook(vm, 'created')       // see: https://cn.vuejs.org/v2/api/?#created
 
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
