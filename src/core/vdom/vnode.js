@@ -1,3 +1,4 @@
+// VNode节点类
 export default class VNode {
   constructor (
     tag,      // 标签名
