@@ -21,7 +21,7 @@ export function initLifecycle (vm) {
 
 
 /**
- * 将生命周期钩子函数混入vue实例
+ * 将生命周期钩子的函数混入vue实例
  *
  * @export
  * @param {*} Vue

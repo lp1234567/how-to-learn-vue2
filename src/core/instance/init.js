@@ -4,7 +4,7 @@ import { initLifecycle, callHook } from './lifecycle'
 let uid = 0
 
 /**
- * 初始化vue的mixxin 暴露出给vue实例
+ * 初始化vue的mixin 暴露出给vue实例
  *
  * @export
  * @param {*} Vue
