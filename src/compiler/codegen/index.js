@@ -67,7 +67,7 @@ import { warn } from 'core/util/debug'
     }
   }
 */
-// 代码生成，将ast转换成VNode（带表达式）， 通过with将VNode上下文指向当前vm
+// 代码生成，将ast转换成VNode render函数（带表达式）， 通过with将VNode上下文指向当前vm
 export function generate (ast) {
   const code = ast ? genElement(ast) : '_c("div")'
 
