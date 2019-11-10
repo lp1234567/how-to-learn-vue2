@@ -1,7 +1,7 @@
 
 
 /**
- * 给vnode的elm节点更新参数
+ * 给vnode的elm节点更新属性参数
  *
  * @export
  * @param {*} oldVnode
