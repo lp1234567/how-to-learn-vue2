@@ -73,7 +73,7 @@ export default class Dep {
 // this is globally unique because there could be only one
 // watcher being evaluated at any time.
 
-// js是单线程，所以全局只会有一个watcher在被执行
+// js是单线程，所以全局只会有一个watcher在被执行中
 // 在收集依赖的时候只需要维护一个全局的target堆栈即可
 Dep.target = null
 const targetStack = []
