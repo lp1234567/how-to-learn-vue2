@@ -42,6 +42,7 @@ export const isFalsyAttrValue = (val) => {
   return val == null || val === false
 }
 
+// 设置属性
 function setAttr (el, key, value) {
   if (isFalsyAttrValue(value)) {
     el.removeAttribute(key)
