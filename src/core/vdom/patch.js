@@ -155,7 +155,7 @@ function removeVnodes (parentElm, vnodes, startIdx, endIdx) {
 }
 
 /**
- * patch 更新VNode的子节点  
+ * patch 更新VNode的子节点
  *
  * @param {*} parentElm 父dom节点
  * @param {*} oldCh 老vnode节点
